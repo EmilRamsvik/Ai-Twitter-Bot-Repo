@@ -1,5 +1,4 @@
-import twint
-import fire
+
 import re
 import csv
 from tqdm import tqdm
@@ -7,7 +6,8 @@ import logging
 from datetime import datetime
 from time import sleep
 import os
-
+import twint
+import fire
 # Surpress random twint warnings
 logger = logging.getLogger()
 logger.disabled = True
@@ -25,7 +25,7 @@ def is_reply(tweet):
 
     # Check to see if any of the other users "replied" are in the tweet text
     users = tweet.reply_to[1:]
-    conversations = [user["username"] in tweet.tweet for user in users]
+    conversations = [user["screen_name"] in tweet.tweet for user in users]
 
     # If any if the usernames are not present in text, then it must be a reply
     if sum(conversations) < len(users):
@@ -148,14 +148,10 @@ def download_tweets(
                 pbar.update(20)
             else:
                 pbar.update(40)
-            oldest_tweet = datetime.utcfromtimestamp(
-                tweet_data[-1].datetime / 1000.0
-            ).strftime("%Y-%m-%d %H:%M:%S")
-            pbar.set_description("Oldest Tweet: " + oldest_tweet)
+            oldest_tweet = datetime.strptime(' '.join(tweet_data[-1].datetime.split(' ', 3)[:2]),"%Y-%m-%d %H:%M:%S")
+            pbar.set_description("Oldest Tweet: " + str(oldest_tweet))
 
     pbar.close()
     os.remove(".temp")
-
-
 if __name__ == "__main__":
     fire.Fire(download_tweets)
